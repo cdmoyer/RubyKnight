@@ -65,20 +65,21 @@ $stdin.each do |move|
 				puts "dumped."
 			when "load" 
 				File.open( $2, "r") { |f| b.load( f.readlines.join) }
+				eval = RubyKnight::BoardEvaluator.new b
 				puts "loaded."
 			when "reset" 
 				b = RubyKnight::Board.new
+				eval = RubyKnight::BoardEvaluator.new b
 		end
 		displayb b,eval
 	else
 		begin
 			b.cnotation_move move
-			if cplay then play(b,eval) end
-			displayb b,eval
+			play(b,eval) if cplay
 		rescue RubyKnight::IllegalMoveException
 			print "Enter a real move! #{$!.to_s}\n"
-			print "Enter move> "
 		end
+		displayb b,eval
 	end
 end
 
