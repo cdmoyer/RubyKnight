@@ -4,7 +4,7 @@ module RubyKnight
 	end
 	
 	class Board
-		attr_reader :history, :WHITE, :BLACK
+		attr_reader :history, :WHITE, :BLACK, :to_play
 		
 		WHITE, BLACK = 0, 1
 		QUEENSIDE, KINGSIDE = 0, 1
