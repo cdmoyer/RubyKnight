@@ -1,7 +1,7 @@
 #!/usr/bin/ruby
 
-load 'board.rb'
-load 'generator.rb'
+load './board.rb'
+load './generator.rb'
 
 module Enumerable
 	def rand

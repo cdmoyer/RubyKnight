@@ -1,5 +1,4 @@
 module RubyKnight
-
 	class IllegalMoveException < RuntimeError
 	end
 	
