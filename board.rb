@@ -135,11 +135,16 @@ module RubyKnight
 
 		def whats_at position
 			positionbit = (1 << position)
-			somethingthere = false
-			unless (@bitboards[WALL]|@bitboards[BALL]) & positionbit > 0
+			if @bitboards[WALL] & positionbit > 0
+				range = WPAWN..WKING
+			elsif @bitboards[BALL] & positionbit > 0
+				range = BPAWN..BKING
+			else 
 				return false
 			end
-			(0..11).each do |piece|		
+
+			somethingthere = false
+			range.each do |piece|		
 				if (@bitboards[piece] & positionbit) > 0
 					somethingthere = piece
 					break 
