@@ -9,17 +9,17 @@ end
 class RubyKnight::Board
 	def gen_legal_moves
 		moves = nil
-		time_it("gen_moral_moves"){ moves = gen_moral_moves(@to_play)}	
+		time_it("gen_moves"){ moves = gen_moves(@to_play)}	
 		time_it("legal filtering"){ moves = prune_king_revealers(@to_play,moves)}
 		moves
 	end
 
-	# TODO: I am so slow, that I should die, probably in gen_moral_moves
+	# TODO: I am so slow, that I should die, probably in gen_moves
 	def prune_king_revealers player, moves
 		kpiece = player==WHITE ? WKING : BKING
 		moves.select do |to_try|
 			move to_try[0], to_try[1], to_try[2], false
-			next_moves = gen_moral_moves @to_play
+			next_moves = gen_moves @to_play
 			king, = bits_to_positions(@bitboards[kpiece])
 			ret = true
 			next_moves.each do |m|
@@ -33,20 +33,23 @@ class RubyKnight::Board
 		end
 	end
 		
-	def gen_moral_moves player
+	def gen_moves player
 		white = player==WHITE
-		#gen_moral_pawn_moves(white) +
-	    #gen_moral_knight_moves(white) +
-		#gen_moral_rook_moves(white) +
-		#gen_moral_bishop_moves(white) +
-		#gen_moral_king_moves(white) +
-		#gen_moral_queen_moves(white)
-		time_it("gen_moral_pawn") { gen_moral_pawn_moves(white)} +
-		time_it("gen_moral_knight") { gen_moral_knight_moves(white)} +
-		time_it("gen_moral_rook") { gen_moral_rook_moves(white)} +
-		time_it("gen_moral_bishop") { gen_moral_bishop_moves(white)} +
-		time_it("gen_moral_king") { gen_moral_king_moves(white)} +
-		time_it("gen_moral_queen") {gen_moral_queen_moves(white)}
+		if 1 
+		gen_pawn_moves(white) +
+	    gen_knight_moves(white) +
+		gen_rook_moves(white) +
+		gen_bishop_moves(white) +
+		gen_king_moves(white) +
+		gen_queen_moves(white)
+		else
+		time_it("gen_pawn") { gen_pawn_moves(white)} +
+		time_it("gen_knight") { gen_knight_moves(white)} +
+		time_it("gen_rook") { gen_rook_moves(white)} +
+		time_it("gen_bishop") { gen_bishop_moves(white)} +
+		time_it("gen_king") { gen_king_moves(white)} +
+		time_it("gen_queen") {gen_queen_moves(white)}
+		end
 	end
 
 	def different_colors white, piece
@@ -81,7 +84,7 @@ class RubyKnight::Board
 		moves
 	end
 	
-	def gen_moral_rook_moves white
+	def gen_rook_moves white
 		moves = []
 		rooks = @bitboards[ white ? WROOK : BROOK]
 		bits_to_positions(rooks).each do |r|
@@ -118,7 +121,7 @@ class RubyKnight::Board
 		moves
 	end
 
-	def gen_moral_bishop_moves white
+	def gen_bishop_moves white
 		moves = []
 		bishops = @bitboards[white ? WBISHOP : BBISHOP]
 		bits_to_positions(bishops).each do |r|
@@ -127,7 +130,7 @@ class RubyKnight::Board
 		moves
 	end
 
-	def gen_moral_queen_moves white
+	def gen_queen_moves white
 		moves = []
 		queens = @bitboards[white ? WQUEEN : BQUEEN]
 		bits_to_positions(queens).each do |r|
@@ -137,17 +140,50 @@ class RubyKnight::Board
 		moves
 	end
 
-	def gen_moral_king_moves white
+	# TODO: how much time is wasted with the each?  We'll never have
+	#  multiple kings, will we?
+	def gen_king_moves white
 		moves = []
 		kings = @bitboards[white ? WKING : BKING]
-		bits_to_positions(kings).each do |r|
-			moves += gen_rook_type_moves( white, r, 1)
-			moves += gen_bishop_type_moves( white, r, 1)
+		bits_to_positions(kings).each do |king|
+			moves += gen_rook_type_moves( white, king, 1)
+			moves += gen_bishop_type_moves( white, king, 1)
+			moves += gen_castle_moves( white, king)
 		end
 		moves
 	end
 
-	def gen_moral_knight_moves white
+	def gen_castle_moves white, king
+		color = white ? WHITE : BLACK
+		goodcastles = []
+		# kingside
+		if can_castle color, KINGSIDE
+			test = if white then [60,61,62]
+			       else [4,5,6] end
+			if !whats_at(test[1]) and !whats_at(test[2])
+				left = prune_king_revealers(@to_play,
+				           test.map {|dest| [test[0], dest]})
+				if left.size == 3 
+					goodcastles << [test[0],test[2]] 
+				end
+			end
+		end
+		# queenside
+		if can_castle color, QUEENSIDE
+			test = if white then [60,59,58]
+			       else [4,3,2] end
+			if !whats_at(test[1]) and !whats_at(test[2])
+				left = prune_king_revealers(@to_play,
+				           test.map {|dest| [test[0], dest]})
+				if left.size == 3 
+					goodcastles << [test[0],test[2]] 
+				end
+			end
+		end
+		goodcastles
+	end
+
+	def gen_knight_moves white
 		moves = []
 		knights = @bitboards[white ? WKNIGHT : BKNIGHT]
 		bits_to_positions(knights).each do |k|
@@ -165,7 +201,7 @@ class RubyKnight::Board
 		moves
 	end
 	
-	def gen_moral_pawn_moves white
+	def gen_pawn_moves white
 		pawns = @bitboards[white ? WPAWN : BPAWN]
 		if white
 			in_front_int = -8

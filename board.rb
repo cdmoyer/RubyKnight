@@ -56,6 +56,24 @@ module RubyKnight
 				mark_enpassant nil,  nil, nil
 			end
 
+			# handle castling
+			@bitboards[CAN_CASTLE] = evt.can_castle
+			# are we castling?
+			if (evt.piece == WKING or evt.piece == BKING) and
+			   (evt.dest - evt.orig).abs == 2
+				# yes, we are
+				case evt.dest
+					when 62
+						move_piece WROOK, 61, 63	
+					when 58
+						move_piece WROOK, 59, 56	
+					when 2
+						move_piece BROOK, 3, 0	
+					when 6
+						move_piece BROOK, 5, 7
+				end
+			end
+
 			@to_play = if @to_play==WHITE then BLACK
 			           else WHITE end
 		end
@@ -216,6 +234,40 @@ module RubyKnight
 			unplace_piece captured, dest if captured
 			move_piece piece, orig, dest
 
+			# handle castling
+			# are we castling?
+			if (piece == WKING or piece == BKING) and
+			   (dest - orig).abs == 2
+				# yes, we are
+				case dest
+					when 62
+						move_piece WROOK, 63, 61	
+					when 58
+						move_piece WROOK, 56, 59	
+					when 2
+						move_piece BROOK, 0, 3	
+					when 6
+						move_piece BROOK, 7, 5
+				end
+			end
+
+
+			# mark no-longer-possible castles
+			can_castle_was = @bitboards[CAN_CASTLE]
+			if piece == WKING 
+				@bitboards[CAN_CASTLE] &= ~(1|2)
+			elsif piece == WROOK and orig == 56
+				@bitboards[CAN_CASTLE] &= ~(1)
+			elsif piece == WROOK and orig == 63
+				@bitboards[CAN_CASTLE] &= ~(2)
+			elsif piece == BKING
+				@bitboards[CAN_CASTLE] &= ~(4|8)
+			elsif piece == BROOK and orig == 0
+				@bitboards[CAN_CASTLE] &= ~(4)
+			elsif piece == BROOK and orig == 7
+				@bitboards[CAN_CASTLE] &= ~(8)
+			end
+
 			if promotion
 				unplace_piece piece, dest	
 				place_piece promotion, dest
@@ -223,7 +275,8 @@ module RubyKnight
 
 			mark_enpassant piece, orig, dest
 
-			@history <<Event.new(piece, orig, dest, captured, promotion)
+			@history << Event.new(piece, orig, dest, captured, 
+			                      promotion, can_castle_was)
 			@to_play = if @to_play==WHITE then BLACK
 			           else WHITE end
 		end
@@ -241,18 +294,24 @@ module RubyKnight
 		def bits_to_positions bits
 			(0..63).select {|i| 1<<i & bits !=0}
 		end
+
+		def can_castle color, side
+			@bitboards[CAN_CASTLE] & (1 << ((color * 2)+side)) > 0
+		end
 	
 		class History < Array
 		end
 
 		class Event
-			attr_reader :piece, :orig, :dest, :capture, :promotion
-			def initialize piece, orig, dest, capture, promotion=false
+			attr_reader :piece, :orig, :dest, :capture, :promotion, :can_castle
+			def initialize piece, orig, dest, capture, 
+		 	               promotion=false, can_castle=0
 				@piece = piece
 				@orig = orig
 				@dest = dest
 				@capture = capture
 				@promotion = promotion
+				@can_castle = can_castle
 			end
 
 			def to_s
