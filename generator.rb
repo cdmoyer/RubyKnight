@@ -133,8 +133,8 @@ module RubyKnight
 				second_rank_high = 56
 				second_rank_low = 47
 				two_away_int = -16
-				attack_left = -7
-				attack_right = -9
+				attack_left = -9
+				attack_right = -7
 			else
 				in_front_int = 8
 				second_rank_high = 16
