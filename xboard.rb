@@ -1,13 +1,13 @@
 #!/usr/bin/env ruby
 
-#load './board.rb'
-#load './generator.rb'
-load '/Users/cmoyer/Devel/rubyknight/board.rb'
-load '/Users/cmoyer/Devel/rubyknight/generator.rb'
+load './board.rb'
+load './generator.rb'
+load './evaluator.rb'
 
 confirm = false
 $stdout.sync=true
 $stderr.sync=true
+Thread.abort_on_exception = true
 
 def time_it label
 	yield
@@ -24,40 +24,26 @@ module Enumerable
 	end
 end
 
-def displayb b
-	puts "#{b.to_s}\n"
-	moves = b.gen_legal_moves
-	puts "Moves: #{moves.size}"
-	i=1
-	moves.each do |m|
-		print m.join(',')
-		if i % 13 == 0 then print "\n"
-		else print ' ' end
-		i+=1
-	end
-	print "\n"
-	if moves.size == 0
-		puts "RESULT 0-1 {Black Mates}"
-	end
-end
 
 def tocnote move
 	"#{RubyKnight::Board.position_to_coord move[0]}#{RubyKnight::Board.position_to_coord move[1]}"
 end
 
-def play b
+def play b, eval
 	moves = b.gen_legal_moves
 	if moves.size == 0
 		puts "RESULT 1-0 {White Mates}"
 	end
-	move = moves.rand
+	thinking = Thread.new { eval.think(b.white_to_play?) }
+	until eval.donethinking; sleep(0.2); end
+	move = eval.bestmove
 	cnotation = tocnote move
-	logout "move #{cnotation}"
 	b.cnotation_move cnotation
+	logout "move #{cnotation}"
 end
 
-cplay = true
 b = RubyKnight::Board.new
+eval = RubyKnight::BoardEvaluator.new b
 $stdin.each do |move|
 	move.strip!
 	$stderr.print "In :#{move}\n"
@@ -70,6 +56,7 @@ $stdin.each do |move|
 			logout "Will now confirm moves."	
 		when /.{0,1}new/
 			b = RubyKnight::Board.new
+			eval = RubyKnight::BoardEvaluator.new b
 			logout "tellics set 1 RubyKnight"
 		when /^protover/ then 
 			logout "feature sigint=0 sigterm=0 ping=1 done=1"	
@@ -88,10 +75,11 @@ $stdin.each do |move|
 			begin
 				b.cnotation_move move
 				logout "Legal move: #{move}" if confirm
-				if cplay then play(b) end
-				# displayb b
+				play(b,eval)
 			rescue RubyKnight::IllegalMoveException
 				logout "Illegal move: #{move}"
+			rescue	Exception=> e
+				puts e	
 			end
 	end
 end
