@@ -16,8 +16,9 @@ module RubyKnight
 
 		def think for_white
 			@bestmoves, @bestscore, @donethinking = nil, 0, false
-			@b.gen_legal_moves.each do |move|
-				newb = Marshal.load(Marshal.dump( @b))
+			clone = Marshal.load(Marshal.dump( @b))
+			clone.gen_legal_moves.each do |move|
+				newb = Marshal.load(Marshal.dump( clone))
 				newb.move move[0], move[1], move[2]
 				result = eval_position newb
 				if (for_white and result > @bestscore) or
@@ -62,13 +63,13 @@ module RubyKnight
 					bl.each {|i| bchain = true if (c-i).abs <= 1 }
 					br.each {|i| bchain = true if (c-i).abs <= 1 } unless bchain
 				}
-				puts "rank=#{rank} wchain=#{wchain} bchain=#{bchain}"
+				#puts "rank=#{rank} wchain=#{wchain} bchain=#{bchain}"
 
-				isolated +=1 unless wchain
-				isolated -=1 unless bchain
+				isolated +=1 unless w.size>0 && wchain
+				isolated -=1 unless b.size>0 && bchain
 
-				chained +=1 if wchain
-				chained -=1 if bchain
+				chained +=1 if w.size>0 && wchain
+				chained -=1 if b.size>0 && bchain
 	
 				doubled -= 1 if w.size > 1
 				doubled += 1 if b.size > 1
