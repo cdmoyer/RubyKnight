@@ -11,6 +11,7 @@ module RubyKnight
 		BPAWN, BROOK, BBISHOP, BKNIGHT, BQUEEN, BKING = 6,7,8,9,10,11
 		WALL, BALL = 12, 13
 		ENPASSANT = 14
+		LAST_BOARD = CAN_CASTLE = 15
 
 		SYMBOLS = [ 'P','R','B','N','Q','K',
 		            'p','r','b','n','q','k']
@@ -20,10 +21,22 @@ module RubyKnight
 			setup_start
 		end
 
+		def dump
+			@bitboards[@bitboards.size] = @history
+			ret = Marshal.dump(@bitboards)
+			@bitboards.delete_at (@bitboards.size-1)
+			ret
+		end
+
+		def load dmp
+			@bitboards = Marshal.load( dmp)
+			@history = @bitboards.pop
+		end
+
 		def setup_start
 			@to_play = WHITE
-			@bitboards = Array.new 15, 0
-			@can_castle = [ [true, true], [true, true] ]
+			@bitboards = Array.new LAST_BOARD+1, 0
+			@bitboards[CAN_CASTLE] = 0x000F # 1111
 
 			@history = History.new
 			

@@ -30,14 +30,27 @@ displayb b
 #['e2e4','d7d5','e4e5','f7f5'].each do |move|
 $stdin.each do |move|
 	move.strip!
-	begin
-		b.cnotation_move move
-		move = b.gen_moral_moves(b.to_play).rand
-		b.cnotation_move "#{RubyKnight::Board.position_to_coord move[0]}#{RubyKnight::Board.position_to_coord move[1]}"
+	if move =~ /!([^ ]*)[ ]*(.*)/
+		case $1
+			when "quit" then Kernel.exit 
+			when "dump" 
+				File.open( $2, "w") { |f| f.write( b.dump) }
+				puts "dumped."
+			when "load" 
+				File.open( $2, "r") { |f| b.load( f.readlines.join) }
+				puts "loaded."
+		end
 		displayb b
-	rescue RubyKnight::IllegalMoveException
-		print "Enter a real move!\n"
-		print "Enter move> "
+	else
+		begin
+			b.cnotation_move move
+			move = b.gen_moral_moves(b.to_play).rand
+			b.cnotation_move "#{RubyKnight::Board.position_to_coord move[0]}#{RubyKnight::Board.position_to_coord move[1]}"
+			displayb b
+		rescue RubyKnight::IllegalMoveException
+			print "Enter a real move!\n"
+			print "Enter move> "
+		end
 	end
 end
 
