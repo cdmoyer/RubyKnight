@@ -21,15 +21,22 @@ module RubyKnight
 			setup_start
 		end
 
+		def white_to_play?
+			@to_play == WHITE	
+		end
+
 		def dump
 			@bitboards[@bitboards.size] = @history
+			@bitboards[@bitboards.size] = @to_play
 			ret = Marshal.dump(@bitboards)
-			@bitboards.delete_at (@bitboards.size-1)
+			@bitboards.delete_at(@bitboards.size-1)
+			@bitboards.delete_at(@bitboards.size-1)
 			ret
 		end
 
 		def load dmp
 			@bitboards = Marshal.load( dmp)
+			@to_play = @bitboards.pop
 			@history = @bitboards.pop
 		end
 
@@ -41,7 +48,16 @@ module RubyKnight
 			if evt.promotion then unplace_piece evt.promotion, evt.dest
 			else unplace_piece evt.piece, evt.dest end
 
-			if evt.capture then place_piece evt.capture, dest end
+			if evt.capture then place_piece evt.capture, evt.dest end
+
+			if last = @history.last
+				mark_enpassant last.piece, last.orig, last.dest
+			else
+				mark_enpassant nil,  nil, nil
+			end
+
+			@to_play = if @to_play==WHITE then BLACK
+			           else WHITE end
 		end
 
 		def undo num = 1
@@ -172,7 +188,7 @@ module RubyKnight
 			piece <= WKING
 		end
 
-		def move orig, dest, promotion
+		def move orig, dest, promotion=nil, verify_legality = true
 			piece = whats_at(orig)
 
 			# Check Legality
@@ -183,27 +199,38 @@ module RubyKnight
 				raise IllegalMoveException, "Not your piece"
 			end
 
-			legal_moves = gen_moral_moves @to_play
-			unless legal_moves.include? [orig, dest]
-				raise IllegalMoveException, "Invalid move"
+			if verify_legality
+				legal_moves = gen_legal_moves
+				unless legal_moves.include? [orig, dest] or
+			       	   legal_moves.include? [orig, dest, promotion]
+					raise IllegalMoveException, "Invalid move"
+				end
 			end
 			
 			captured = whats_at(dest)
 			unplace_piece captured, dest if captured
 			move_piece piece, orig, dest
 
-			#mark en-passant
-			if piece == WPAWN and orig > 47 and orig < 56 and
-				@bitboards[ENPASSANT] = ( 1 << orig+8)
-			elsif piece == BPAWN and orig > 7 and orig < 16 and			
-				@bitboards[ENPASSANT] = ( 1 << orig+8)
-			else
-				@bitboards[ENPASSANT] = 0
-			end
+			if promotion
+				unplace_piece piece, dest	
+				place_piece promotion, dest
+			end	
+
+			mark_enpassant piece, orig, dest
 
 			@history <<Event.new(piece, orig, dest, captured, promotion)
 			@to_play = if @to_play==WHITE then BLACK
 			           else WHITE end
+		end
+
+		def mark_enpassant last_piece, last_orig, last_dest
+			if last_piece == WPAWN and last_orig > 47 and last_orig < 56 and
+				@bitboards[ENPASSANT] = ( 1 << last_orig+8)
+			elsif last_piece == BPAWN and last_orig > 7 and last_orig < 16 and
+				@bitboards[ENPASSANT] = ( 1 << last_orig+8)
+			else
+				@bitboards[ENPASSANT] = 0
+			end
 		end
 
 		def bits_to_positions bits
