@@ -295,6 +295,10 @@ module RubyKnight
 			(0..63).select {|i| 1<<i & bits !=0}
 		end
 
+		def num_pieces piece
+			bits_to_positions(@bitboards[piece]).size
+		end
+
 		def can_castle color, side
 			@bitboards[CAN_CASTLE] & (1 << ((color * 2)+side)) > 0
 		end
