@@ -2,6 +2,7 @@
 
 load './board.rb'
 load './generator.rb'
+load './evaluator.rb'
 
 module Enumerable
 	def rand
@@ -9,9 +10,10 @@ module Enumerable
 	end
 end
 
-def displayb b
+def displayb b, evaluator
 	puts "#{b.to_s}\n"
 	moves = b.gen_legal_moves
+	puts "Score: #{evaluator.eval_position}"
 	puts "Moves: #{moves.size}"
 	i=1
 	moves.each do |m|
@@ -28,19 +30,25 @@ def displayb b
 	print "Enter move [#{b.white_to_play? ? 'White' : 'Black'}]> "
 end
 
-def play b
+Thread.abort_on_exception = true
+
+def play b, eval
 	moves = b.gen_legal_moves
 	if moves.size == 0
 		puts "Checkmate, you win!"	
 		Kernel.exit(0)
 	end
-	move = moves.rand
+	# move = moves.rand
+	@thinking = Thread.new { eval.think(b.white_to_play?) }
+	until eval.donethinking; sleep(1.2); end
+	move = eval.bestmove
 	b.cnotation_move "#{RubyKnight::Board.position_to_coord move[0]}#{RubyKnight::Board.position_to_coord move[1]}"
 end
 
 cplay = false
 b = RubyKnight::Board.new
-displayb b
+eval = RubyKnight::BoardEvaluator.new b
+displayb b, eval
 #['e2e4' , 'e7e5' , 'd2d3'].each do |move|
 #['e2e4','d7d5','e4e5','f7f5'].each do |move|
 $stdin.each do |move|
@@ -51,7 +59,7 @@ $stdin.each do |move|
 			when "undo" then b.undo 2
 			when "play" 
 				cplay = !cplay
-				play(b) if cplay
+				play(b, eval) if cplay
 			when "dump" 
 				File.open( $2, "w") { |f| f.write( b.dump) }
 				puts "dumped."
@@ -61,17 +69,16 @@ $stdin.each do |move|
 			when "reset" 
 				b = RubyKnight::Board.new
 		end
-		displayb b
+		displayb b,eval
 	else
 		begin
 			b.cnotation_move move
-			if cplay then play(b) end
-			displayb b
+			if cplay then play(b,eval) end
+			displayb b,eval
 		rescue RubyKnight::IllegalMoveException
 			print "Enter a real move! #{$!.to_s}\n"
 			print "Enter move> "
 		end
 	end
 end
-
 
