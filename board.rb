@@ -33,6 +33,21 @@ module RubyKnight
 			@history = @bitboards.pop
 		end
 
+		def _undo
+			evt = @history.pop
+			return unless evt
+			place_piece evt.piece, evt.orig
+
+			if evt.promotion then unplace_piece evt.promotion, evt.dest
+			else unplace_piece evt.piece, evt.dest end
+
+			if evt.capture then place_piece evt.capture, dest end
+		end
+
+		def undo num = 1
+			num.times { _undo}
+		end
+
 		def setup_start
 			@to_play = WHITE
 			@bitboards = Array.new LAST_BOARD+1, 0
@@ -199,12 +214,12 @@ module RubyKnight
 		end
 
 		class Event
-			attr_reader :piece, :origi, :dest, :captured, :promotion
-			def initialize piece, orig, dest, captured, promotion=false
+			attr_reader :piece, :orig, :dest, :capture, :promotion
+			def initialize piece, orig, dest, capture, promotion=false
 				@piece = piece
 				@orig = orig
 				@dest = dest
-				@captured = captured
+				@capture = capture
 				@promotion = promotion
 			end
 

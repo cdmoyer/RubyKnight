@@ -33,6 +33,7 @@ $stdin.each do |move|
 	if move =~ /!([^ ]*)[ ]*(.*)/
 		case $1
 			when "quit" then Kernel.exit 
+			when "undo" then b.undo 2
 			when "dump" 
 				File.open( $2, "w") { |f| f.write( b.dump) }
 				puts "dumped."
