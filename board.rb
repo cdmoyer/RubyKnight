@@ -154,6 +154,16 @@ module RubyKnight
 			
 			captured = whats_at(dest)
 			move_piece piece, orig, dest
+
+			#mark en-passant
+			if piece == WPAWN and orig > 47 and orig < 56 and
+				@bitboards[ENPASSANT] = ( 1 << orig+8)
+			elsif piece == BPAWN and orig > 7 and orig < 16 and			
+				@bitboards[ENPASSANT] = ( 1 << orig+8)
+			else
+				@bitboards[ENPASSANT] = 0
+			end
+
 			@history <<Event.new(piece, orig, dest, captured, promotion)
 			@to_play = if @to_play==WHITE then BLACK
 			           else WHITE end
