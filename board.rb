@@ -10,7 +10,7 @@ module RubyKnight
 		QUEENSIDE, KINGSIDE = 0, 1
 		WPAWN, WROOK, WBISHOP, WKNIGHT, WQUEEN, WKING = 0,1,2,3,4,5
 		BPAWN, BROOK, BBISHOP, BKNIGHT, BQUEEN, BKING = 6,7,8,9,10,11
-		BALL, BWHITE = 12, 13
+		WALL, BALL = 12, 13
 		ENPASSANT = 14
 
 		SYMBOLS = [ 'P','R','B','N','Q','K',
@@ -63,6 +63,7 @@ module RubyKnight
 
 		def cnotation_move cnot
 			start, dest, promotion = cnotation_to_bits cnot
+			raise IllegalMoveException, "Unreadable move" unless start
 			move start, dest, promotion
 		end
 
@@ -92,6 +93,9 @@ module RubyKnight
 		def whats_at position
 			positionbit = (1 << position)
 			somethingthere = false
+			unless (@bitboards[WALL]|@bitboards[BALL]) & positionbit > 0
+				return false
+			end
 			(0..11).each do |piece|		
 				if (@bitboards[piece] & positionbit) > 0
 					somethingthere = piece
@@ -150,6 +154,11 @@ module RubyKnight
 				   ((is_white(piece) and @to_play == WHITE) or
 				    (!is_white(piece) and @to_play == BLACK))
 				raise IllegalMoveException, "Not your piece"
+			end
+
+			legal_moves = gen_moral_moves @to_play
+			unless legal_moves.include? [orig, dest]
+				raise IllegalMoveException, "Invalid move"
 			end
 			
 			captured = whats_at(dest)

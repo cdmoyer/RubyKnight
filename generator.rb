@@ -1,8 +1,111 @@
 module RubyKnight
 	class Board
 		def gen_moral_moves player
-			gen_moral_pawn_moves(player) +
-			gen_moral_knight_moves(player)
+			start = Time.now
+			moves = gen_moral_pawn_moves(player) +
+			gen_moral_knight_moves(player) +
+			gen_moral_rook_moves(player) +
+			gen_moral_bishop_moves(player) +
+			gen_moral_king_moves(player) +
+			gen_moral_queen_moves(player)
+			puts "Generation took: #{Time.now - start} microseconds"
+			moves
+		end
+
+		def different_colors player, piece
+			(player==WHITE and !is_white piece) or
+			(player!=WHITE and is_white piece)
+		end
+
+		def gen_rook_type_moves player, piece, limit = 7
+			moves = []
+			rank = piece / 8
+			file = piece % 8
+			[-8,-1,1,8].each do |inc|
+				trying = piece + inc
+				while limit > 0 and
+			          trying >= 0 and trying <= 63 and
+				      (rank == (trying / 8) or
+					   file == (trying % 8)) do
+					target = whats_at trying
+					if !target
+						moves << [piece, trying]
+					elsif different_colors( player, target)
+						moves << [piece, trying]
+						break
+					else
+						break
+					end
+					trying += inc
+					limit -= 1
+				end
+			end
+			moves
+		end
+		
+		def gen_moral_rook_moves player
+			moves = []
+			rooks = @bitboards[WROOK + (player==WHITE ? 0 : 6)]
+			bits_to_positions(rooks).each do |r|
+				moves += gen_rook_type_moves( player, r)
+			end
+			moves
+		end
+
+		def gen_bishop_type_moves player, piece, limit = 7
+			moves = []
+			[-9,-7,7,9].each do |inc|
+				trying = piece + inc
+				rank = trying / 8
+				lastrank = piece / 8
+				while limit > 0 and
+				      trying >= 0 and trying <= 63 and
+				      (lastrank - rank).abs == 1 do
+					target = whats_at trying
+					if !target
+						moves << [piece, trying]
+					elsif different_colors( player, target)
+						moves << [piece, trying]
+						break
+					else
+						break
+					end
+					lastrank = rank
+					trying += inc
+					rank = trying / 8
+					limit -= 1
+				end
+			end
+			moves
+		end
+
+		def gen_moral_bishop_moves player
+			moves = []
+			bishops = @bitboards[WBISHOP + (player==WHITE ? 0 : 6)]
+			bits_to_positions(bishops).each do |r|
+				moves += gen_bishop_type_moves( player, r)
+			end
+			moves
+		end
+
+		def gen_moral_queen_moves player
+			moves = []
+			queens = @bitboards[WQUEEN + (player==WHITE ? 0 : 6)]
+			bits_to_positions(queens).each do |r|
+				moves += gen_rook_type_moves( player, r)
+				moves += gen_bishop_type_moves( player, r)
+			end
+			moves
+		end
+
+		def gen_moral_king_moves player
+			moves = []
+			kings = @bitboards[WKING + (player==WHITE ? 0 : 6)]
+			bits_to_positions(kings).each do |r|
+				moves += gen_rook_type_moves( player, r, 1)
+				moves += gen_bishop_type_moves( player, r, 1)
+			end
+			moves
 		end
 
 		def gen_moral_knight_moves player
@@ -14,8 +117,7 @@ module RubyKnight
 					if target >= 0 and target <= 63 and
 					   ((target % 8) - (k % 8)).abs < 3
 						capture = whats_at target
-						if !capture or (player==WHITE and !is_white capture) or
-						   (player!=WHITE and is_white capture)
+						if !capture or different_colors(player, capture)
 						   moves << [k, target]
 						end
 					end

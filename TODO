@@ -1,2 +1,3 @@
-whats_at
-	check WALL and BALL first.
+add castling to king moves
+  (mark uncastling in move())
+write filter_king_revealers	
