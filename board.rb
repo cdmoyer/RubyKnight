@@ -174,6 +174,7 @@ module RubyKnight
 			end
 			
 			captured = whats_at(dest)
+			unplace_piece captured, dest if captured
 			move_piece piece, orig, dest
 
 			#mark en-passant
