@@ -295,6 +295,10 @@ module RubyKnight
 			(0..63).select {|i| 1<<i & bits !=0}
 		end
 
+		def piece_positions piece
+			bits_to_positions(@bitboards[piece])
+		end
+
 		def num_pieces piece
 			bits_to_positions(@bitboards[piece]).size
 		end
