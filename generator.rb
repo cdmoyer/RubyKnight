@@ -16,10 +16,11 @@ class RubyKnight::Board
 
 	# TODO: I am so slow, that I should die, probably in gen_moral_moves
 	def prune_king_revealers player, moves
+		kpiece = player==WHITE ? WKING : BKING
 		moves.select do |to_try|
 			move to_try[0], to_try[1], to_try[2], false
 			next_moves = gen_moral_moves @to_play
-			king, = bits_to_positions(@bitboards[player==WHITE ? WKING : BKING])
+			king, = bits_to_positions(@bitboards[kpiece])
 			ret = true
 			next_moves.each do |m|
 				if m[1] == king
@@ -33,26 +34,27 @@ class RubyKnight::Board
 	end
 		
 	def gen_moral_moves player
-		gen_moral_pawn_moves(player) +
-	    gen_moral_knight_moves(player) +
-		gen_moral_rook_moves(player) +
-		gen_moral_bishop_moves(player) +
-		gen_moral_king_moves(player) +
-		gen_moral_queen_moves(player)
-		#time_it("gen_moral_pawn") { gen_moral_pawn_moves(player)} +
-		#time_it("gen_moral_knight") { gen_moral_knight_moves(player)} +
-		#time_it("gen_moral_rook") { gen_moral_rook_moves(player)} +
-		#time_it("gen_moral_bishop") { gen_moral_bishop_moves(player)} +
-		#time_it("gen_moral_king") { gen_moral_king_moves(player)} +
-		#time_it("gen_moral_queen") {gen_moral_queen_moves(player)}
+		white = player==WHITE
+		#gen_moral_pawn_moves(white) +
+	    #gen_moral_knight_moves(white) +
+		#gen_moral_rook_moves(white) +
+		#gen_moral_bishop_moves(white) +
+		#gen_moral_king_moves(white) +
+		#gen_moral_queen_moves(white)
+		time_it("gen_moral_pawn") { gen_moral_pawn_moves(white)} +
+		time_it("gen_moral_knight") { gen_moral_knight_moves(white)} +
+		time_it("gen_moral_rook") { gen_moral_rook_moves(white)} +
+		time_it("gen_moral_bishop") { gen_moral_bishop_moves(white)} +
+		time_it("gen_moral_king") { gen_moral_king_moves(white)} +
+		time_it("gen_moral_queen") {gen_moral_queen_moves(white)}
 	end
 
-	def different_colors player, piece
-		(player==WHITE and !is_white piece) or
-		(player!=WHITE and is_white piece)
+	def different_colors white, piece
+		(white and !is_white piece) or
+		(!white and is_white piece)
 	end
 
-	def gen_rook_type_moves player, piece, start_limit = 8
+	def gen_rook_type_moves white, piece, start_limit = 8
 		moves = []
 		rank = piece / 8
 		file = piece % 8
@@ -66,7 +68,7 @@ class RubyKnight::Board
 				target = whats_at trying
 				if !target
 					moves << [piece, trying]
-				elsif different_colors( player, target)
+				elsif different_colors( white, target)
 					moves << [piece, trying]
 					break
 				else
@@ -79,16 +81,16 @@ class RubyKnight::Board
 		moves
 	end
 	
-	def gen_moral_rook_moves player
+	def gen_moral_rook_moves white
 		moves = []
-		rooks = @bitboards[player==WHITE ? WROOK : BROOK]
+		rooks = @bitboards[ white ? WROOK : BROOK]
 		bits_to_positions(rooks).each do |r|
-			moves += gen_rook_type_moves( player, r)
+			moves += gen_rook_type_moves( white, r)
 		end
 		moves
 	end
 
-	def gen_bishop_type_moves player, piece, start_limit = 8
+	def gen_bishop_type_moves white, piece, start_limit = 8
 		moves = []
 		[-9,-7,7,9].each do |inc|
 			limit = start_limit	
@@ -101,7 +103,7 @@ class RubyKnight::Board
 				target = whats_at trying
 				if !target
 					moves << [piece, trying]
-				elsif different_colors( player, target)
+				elsif different_colors( white, target)
 					moves << [piece, trying]
 					break
 				else
@@ -116,45 +118,45 @@ class RubyKnight::Board
 		moves
 	end
 
-	def gen_moral_bishop_moves player
+	def gen_moral_bishop_moves white
 		moves = []
-		bishops = @bitboards[player==WHITE ? WBISHOP : BBISHOP]
+		bishops = @bitboards[white ? WBISHOP : BBISHOP]
 		bits_to_positions(bishops).each do |r|
-			moves += gen_bishop_type_moves( player, r)
+			moves += gen_bishop_type_moves( white, r)
 		end
 		moves
 	end
 
-	def gen_moral_queen_moves player
+	def gen_moral_queen_moves white
 		moves = []
-		queens = @bitboards[player==WHITE ? WQUEEN : BQUEEN]
+		queens = @bitboards[white ? WQUEEN : BQUEEN]
 		bits_to_positions(queens).each do |r|
-			moves += gen_rook_type_moves( player, r)
-			moves += gen_bishop_type_moves( player, r)
+			moves += gen_rook_type_moves(white, r)
+			moves += gen_bishop_type_moves( white, r)
 		end
 		moves
 	end
 
-	def gen_moral_king_moves player
+	def gen_moral_king_moves white
 		moves = []
-		kings = @bitboards[player==WHITE ? WKING : BKING]
+		kings = @bitboards[white ? WKING : BKING]
 		bits_to_positions(kings).each do |r|
-			moves += gen_rook_type_moves( player, r, 1)
-			moves += gen_bishop_type_moves( player, r, 1)
+			moves += gen_rook_type_moves( white, r, 1)
+			moves += gen_bishop_type_moves( white, r, 1)
 		end
 		moves
 	end
 
-	def gen_moral_knight_moves player
+	def gen_moral_knight_moves white
 		moves = []
-		knights = @bitboards[player==WHITE ? WKNIGHT : BKNIGHT]
+		knights = @bitboards[white ? WKNIGHT : BKNIGHT]
 		bits_to_positions(knights).each do |k|
 			[-17, -15, -10, -6, 6, 10, 15, 17].each do |m|
 				target = k+m
 				if target >= 0 and target <= 63 and
 				   ((target % 8) - (k % 8)).abs < 3
 					capture = whats_at target
-					if !capture or different_colors(player, capture)
+					if !capture or different_colors(white, capture)
 					   moves << [k, target]
 					end
 				end
@@ -163,9 +165,9 @@ class RubyKnight::Board
 		moves
 	end
 	
-	def gen_moral_pawn_moves player
-		pawns = @bitboards[player==WHITE ? WPAWN : BPAWN]
-		if @to_play == WHITE
+	def gen_moral_pawn_moves white
+		pawns = @bitboards[white ? WPAWN : BPAWN]
+		if white
 			in_front_int = -8
 			second_rank_high = 56
 			second_rank_low = 47
@@ -205,17 +207,13 @@ class RubyKnight::Board
 			#captures
 			unless p % 8 == 0 # we're in the a file
 				ptarget = whats_at( p + attack_left)
-				if ptarget and 
-				   ((is_white(ptarget) and player==BLACK) or
-				    (!is_white(ptarget) and player==WHITE))
+				if ptarget and different_colors(white, ptarget)
 					possible << ( p + attack_left)
 				end
 			end
 			unless p % 8 == 7 # we're in the h file
 				ptarget = whats_at( p + attack_right)
-				if ptarget and 
-				   ((is_white(ptarget) and player==BLACK) or
-				    (!is_white(ptarget) and player==WHITE))
+				if ptarget and different_colors(white, ptarget)
 					possible << ( p + attack_right)
 				end
 			end
