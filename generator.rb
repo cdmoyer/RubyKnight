@@ -45,7 +45,7 @@ module RubyKnight
 		
 		def gen_moral_rook_moves player
 			moves = []
-			rooks = @bitboards[WROOK + (player==WHITE ? 0 : 6)]
+			rooks = @bitboards[player==WHITE ? WROOK : BROOK]
 			bits_to_positions(rooks).each do |r|
 				moves += gen_rook_type_moves( player, r)
 			end
@@ -81,7 +81,7 @@ module RubyKnight
 
 		def gen_moral_bishop_moves player
 			moves = []
-			bishops = @bitboards[WBISHOP + (player==WHITE ? 0 : 6)]
+			bishops = @bitboards[player==WHITE ? WBISHOP : BBISHOP]
 			bits_to_positions(bishops).each do |r|
 				moves += gen_bishop_type_moves( player, r)
 			end
@@ -90,7 +90,7 @@ module RubyKnight
 
 		def gen_moral_queen_moves player
 			moves = []
-			queens = @bitboards[WQUEEN + (player==WHITE ? 0 : 6)]
+			queens = @bitboards[player==WHITE ? WQUEEN : BQUEEN]
 			bits_to_positions(queens).each do |r|
 				moves += gen_rook_type_moves( player, r)
 				moves += gen_bishop_type_moves( player, r)
@@ -100,7 +100,7 @@ module RubyKnight
 
 		def gen_moral_king_moves player
 			moves = []
-			kings = @bitboards[WKING + (player==WHITE ? 0 : 6)]
+			kings = @bitboards[player==WHITE ? WKING : BKING]
 			bits_to_positions(kings).each do |r|
 				moves += gen_rook_type_moves( player, r, 1)
 				moves += gen_bishop_type_moves( player, r, 1)
@@ -110,7 +110,7 @@ module RubyKnight
 
 		def gen_moral_knight_moves player
 			moves = []
-			knights = @bitboards[WKNIGHT + (player==WHITE ? 0 : 6)]
+			knights = @bitboards[player==WHITE ? WKNIGHT : BKNIGHT]
 			bits_to_positions(knights).each do |k|
 				[-17, -15, -10, -6, 6, 10, 15, 17].each do |m|
 					target = k+m
@@ -127,7 +127,7 @@ module RubyKnight
 		end
 		
 		def gen_moral_pawn_moves player
-			pawns = @bitboards[WPAWN + (player==WHITE ? 0 : 6)]
+			pawns = @bitboards[player==WHITE ? WPAWN : BPAWN]
 			if @to_play == WHITE
 				in_front_int = -8
 				second_rank_high = 56
