@@ -39,6 +39,8 @@ $stdin.each do |move|
 			when "load" 
 				File.open( $2, "r") { |f| b.load( f.readlines.join) }
 				puts "loaded."
+			when "reset" 
+				b = RubyKnight::Board.new
 		end
 		displayb b
 	else
