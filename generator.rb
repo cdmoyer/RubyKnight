@@ -17,7 +17,7 @@ module RubyKnight
 			(player!=WHITE and is_white piece)
 		end
 
-		def gen_rook_type_moves player, piece, limit = 7
+		def gen_rook_type_moves player, piece, limit = 8
 			moves = []
 			rank = piece / 8
 			file = piece % 8
@@ -52,7 +52,7 @@ module RubyKnight
 			moves
 		end
 
-		def gen_bishop_type_moves player, piece, limit = 7
+		def gen_bishop_type_moves player, piece, limit = 8
 			moves = []
 			[-9,-7,7,9].each do |inc|
 				trying = piece + inc
