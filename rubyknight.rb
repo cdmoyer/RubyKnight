@@ -21,11 +21,20 @@ def displayb b
 		i+=1
 	end
 	print "\n"
+	if moves.size == 0
+		puts "Checkmate, you lose."
+		Kernel.exit 0
+	end
 	print "Enter move [#{b.white_to_play? ? 'White' : 'Black'}]> "
 end
 
 def play b
-	move = b.gen_legal_moves.rand
+	moves = b.gen_legal_moves
+	if moves.size == 0
+		puts "Checkmate, you win!"	
+		Kernel.exit(0)
+	end
+	move = moves.rand
 	b.cnotation_move "#{RubyKnight::Board.position_to_coord move[0]}#{RubyKnight::Board.position_to_coord move[1]}"
 end
 
