@@ -1,17 +1,17 @@
-#!/usr/bin/ruby
+#!/usr/bin/env ruby
 
 load './board.rb'
 load './generator.rb'
 
 module Enumerable
 	def rand
-		self[Kernel.rand self.size ]
+		self[Kernel.rand(self.size)]
 	end
 end
 
 def displayb b
 	puts "#{b.to_s}\n"
-	moves = b.gen_moral_moves(b.to_play)
+	moves = b.gen_legal_moves
 	puts "Moves: #{moves.size}"
 	i=1
 	moves.each do |m|
@@ -21,9 +21,15 @@ def displayb b
 		i+=1
 	end
 	print "\n"
-	print "Enter move> "
+	print "Enter move [#{b.white_to_play? ? 'White' : 'Black'}]> "
 end
 
+def play b
+	move = b.gen_legal_moves.rand
+	b.cnotation_move "#{RubyKnight::Board.position_to_coord move[0]}#{RubyKnight::Board.position_to_coord move[1]}"
+end
+
+cplay = false
 b = RubyKnight::Board.new
 displayb b
 #['e2e4' , 'e7e5' , 'd2d3'].each do |move|
@@ -34,6 +40,9 @@ $stdin.each do |move|
 		case $1
 			when "quit" then Kernel.exit 
 			when "undo" then b.undo 2
+			when "play" 
+				cplay = !cplay
+				play(b) if cplay
 			when "dump" 
 				File.open( $2, "w") { |f| f.write( b.dump) }
 				puts "dumped."
@@ -47,11 +56,10 @@ $stdin.each do |move|
 	else
 		begin
 			b.cnotation_move move
-			move = b.gen_moral_moves(b.to_play).rand
-			b.cnotation_move "#{RubyKnight::Board.position_to_coord move[0]}#{RubyKnight::Board.position_to_coord move[1]}"
+			if cplay then play(b) end
 			displayb b
 		rescue RubyKnight::IllegalMoveException
-			print "Enter a real move!\n"
+			print "Enter a real move! #{$!.to_s}\n"
 			print "Enter move> "
 		end
 	end
