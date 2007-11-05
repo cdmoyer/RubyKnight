@@ -15,7 +15,7 @@ class RubyKnight::Board
 	end
 
 	# TODO: I am so slow, that I should die, probably in gen_moves
-	def prune_king_revealers player, moves
+	def prune_king_revealers_old player, moves
 		kpiece = player==WHITE ? WKING : BKING
 		moves.select do |to_try|
 			move to_try[0], to_try[1], to_try[2], false
@@ -30,6 +30,67 @@ class RubyKnight::Board
 			end
 			undo 1
 			ret
+		end
+	end
+
+	def prune_king_revealers player, moves
+		kpiece = player==WHITE ? WKING : BKING
+		piecemod = player==WHITE ? BPAWN : 0
+		moves.select do |to_try|
+			move to_try[0], to_try[1], to_try[2], false
+			king, = bits_to_positions(@bitboards[kpiece])
+			dead_king = false
+			rank = king / 8
+			file = king % 8
+			#check up and down for R or Q
+			[-8,-1,1,8].each do |inc|
+				limit = 8
+				trying = king + inc
+				while !dead_king and limit > 0 and
+		          	trying >= 0 and trying <= 63 and
+			      	(rank == (trying / 8) or
+				   	file == (trying % 8)) do
+					target = whats_at trying
+					if target
+					   if (target == (WROOK+piecemod) or
+					       target == (WQUEEN+piecemod))
+							dead_king = true
+					   end
+					   limit = 0
+					else
+						trying += inc
+						limit -= 1
+					end
+				end
+			end unless dead_king
+			#check diagonals for Q, B
+			[-9,-7,7,9].each do |inc|
+				limit = 8
+				trying = king + inc
+				rank = trying / 8
+				lastrank = king / 8
+				while !dead_king and limit > 0 and
+			      	trying >= 0 and trying <= 63 and
+			      	(lastrank - rank).abs == 1 do
+					target = whats_at trying
+					if target
+						if (target == (WBISHOP+piecemod) or
+						    target == (WQUEEN+piecemod))
+							dead_king = true
+						end
+						limit = 0
+					else
+						lastrank = rank
+						trying += inc
+						rank = trying / 8
+						limit -= 1
+					end
+				end
+			end unless dead_king
+			#check 2 P launch zones
+			#check 8 N attack spots
+			undo 1
+			!dead_king
 		end
 	end
 		
