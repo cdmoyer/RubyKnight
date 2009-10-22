@@ -15,7 +15,7 @@ class RubyKnight::Board
 	end
 
 	# TODO: I am so slow, that I should die, probably in gen_moves
-	def prune_king_revealers_old player, moves
+	def prune_king_revealers player, moves
 		kpiece = player==WHITE ? WKING : BKING
 		moves.select do |to_try|
 			move to_try[0], to_try[1], to_try[2], false
@@ -33,7 +33,8 @@ class RubyKnight::Board
 		end
 	end
 
-	def prune_king_revealers player, moves
+	# broken?
+	def prune_king_revealers_old player, moves
 		kpiece = player==WHITE ? WKING : BKING
 		piecemod = player==WHITE ? BPAWN : 0
 		moves.select do |to_try|
