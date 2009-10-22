@@ -118,7 +118,7 @@ module RubyKnight
 		def time_it label
 			start = Time.now
 			res = yield
-			puts "TIMING( '#{label}=>#{res}'): #{Time.now - start} seconds"
+			#puts "TIMING( '#{label}=>#{res}'): #{Time.now - start} seconds"
 			res
 		end
 	end
