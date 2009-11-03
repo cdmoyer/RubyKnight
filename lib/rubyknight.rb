@@ -1,7 +1,31 @@
+# = rubyknight.rb - Ruby Chess Library
+#
+# == Example
+#	board = RubyKnight::Board.new
+#
+#	# disable timing output.  oops
+#	def time_it label
+#		yield
+#	end
+#
+#	puts board.to_s
+#	print "Enter move: "
+#	$stdin.each do |move|
+#		move.strip!
+#		begin
+#			board.cnotation_move move
+#		rescue RubyKnight::IllegalMoveException
+#			print "Enter a real move! #{$!.to_s}\n"
+#		end
+#		puts board.to_s
+#		print "Enter move: "
+#	end
+
 module RubyKnight
 	class IllegalMoveException < RuntimeError
 	end
 	
+	# A Chess Board and State
 	class Board
 		attr_reader :history, :WHITE, :BLACK, :to_play
 		
@@ -21,10 +45,12 @@ module RubyKnight
 			setup_start
 		end
 
+		# Is it white's turn?
 		def white_to_play?
 			@to_play == WHITE	
 		end
 
+		# Dump the board state to a string
 		def dump
 			@bitboards[@bitboards.size] = @history
 			@bitboards[@bitboards.size] = @to_play
@@ -34,6 +60,7 @@ module RubyKnight
 			ret
 		end
 
+		# Load the board state from a string
 		def load dmp
 			@bitboards = Marshal.load( dmp)
 			@to_play = @bitboards.pop
@@ -78,10 +105,12 @@ module RubyKnight
 			           else WHITE end
 		end
 
+		# Roll back the last move, specify two to roll back a whole player
 		def undo num = 1
 			num.times { _undo}
 		end
 
+		# Set the boards to the initial state
 		def setup_start
 			@to_play = WHITE
 			@bitboards = Array.new LAST_BOARD+1, 0
@@ -122,6 +151,7 @@ module RubyKnight
 			"#{(file + 97).chr}#{rank}"
 		end
 
+		# Make a move in coordinate notation, ex. e2e4
 		def cnotation_move cnot
 			start, dest, promotion = cnotation_to_bits cnot
 			raise IllegalMoveException, "Unreadable move" unless start
@@ -151,6 +181,7 @@ module RubyKnight
 			end
 		end
 
+		# find out the piece at a given location
 		def whats_at position
 			positionbit = (1 << position)
 			if @bitboards[WALL] & positionbit > 0
@@ -171,6 +202,7 @@ module RubyKnight
 			somethingthere
 		end
 
+		# get a simple board notation
 		def	to_s
 			out = ""
 			(0..63).each do |position|
