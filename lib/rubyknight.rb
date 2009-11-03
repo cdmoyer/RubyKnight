@@ -332,3 +332,6 @@ module RubyKnight
 		
 	end
 end
+
+require "rubyknight/generator"
+require "rubyknight/evaluator"

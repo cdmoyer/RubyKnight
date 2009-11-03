@@ -1,8 +1,10 @@
 #!/usr/bin/env ruby
 
-load './board.rb'
-load './generator.rb'
-load './evaluator.rb'
+require 'rubyknight'
+
+def time_it label
+	yield
+end
 
 module Enumerable
 	def rand
@@ -14,15 +16,15 @@ def displayb b, evaluator
 	puts "#{b.to_s}\n"
 	moves = b.gen_legal_moves
 	puts "Score: #{evaluator.eval_position}"
-	puts "Moves: #{moves.size}"
-	i=1
-	moves.each do |m|
-		print m.join(',')
-		if i % 13 == 0 then print "\n"
-		else print ' ' end
-		i+=1
-	end
-	print "\n"
+#	puts "Moves: #{moves.size}"
+#	i=1
+#	moves.each do |m|
+#		print m.join(',')
+#		if i % 13 == 0 then print "\n"
+#		else print ' ' end
+#		i+=1
+#	end
+#	print "\n"
 	if moves.size == 0
 		puts "Checkmate, you lose."
 		Kernel.exit 0

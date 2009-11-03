@@ -1,8 +1,6 @@
 #!/usr/bin/env ruby
 
-load './board.rb'
-load './generator.rb'
-load './evaluator.rb'
+require 'rubyknight'
 
 confirm = false
 $stdout.sync=true
