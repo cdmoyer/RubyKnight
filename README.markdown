@@ -14,18 +14,13 @@ Usage
 
 ### Play Chess
 
-`> ./rubyknight`
+`> rubyknight`
 
 ### Write Chess Code
 
 	require 'rubygems'
 	require 'rubyknight'
 	board = RubyKnight::Board.new
-
-	# disable timing output.  oops
-	def time_it label
-		yield
-	end
 
 	puts board.to_s
 	print "Enter move: "

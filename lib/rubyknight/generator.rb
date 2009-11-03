@@ -1,8 +1,5 @@
 def time_it label
-	start = Time.now
-	res = yield
-	puts "TIMING( '#{label}'): #{Time.now - start} seconds"
-	res
+	yield
 end
 
 
@@ -97,21 +94,12 @@ class RubyKnight::Board
 		
 	def gen_moves player
 		white = player==WHITE
-		if 1 
-		gen_pawn_moves(white) +
-	    gen_knight_moves(white) +
-		gen_rook_moves(white) +
-		gen_bishop_moves(white) +
-		gen_king_moves(white) +
-		gen_queen_moves(white)
-		else
-		time_it("gen_pawn") { gen_pawn_moves(white)} +
+		time_it("gen_pawn") {   gen_pawn_moves(white)} +
 		time_it("gen_knight") { gen_knight_moves(white)} +
-		time_it("gen_rook") { gen_rook_moves(white)} +
+		time_it("gen_rook") {   gen_rook_moves(white)} +
 		time_it("gen_bishop") { gen_bishop_moves(white)} +
-		time_it("gen_king") { gen_king_moves(white)} +
-		time_it("gen_queen") {gen_queen_moves(white)}
-		end
+		time_it("gen_king") {   gen_king_moves(white)} +
+		time_it("gen_queen") {  gen_queen_moves(white)}
 	end
 
 	def different_colors white, piece

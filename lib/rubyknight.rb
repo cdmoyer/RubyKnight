@@ -3,11 +3,6 @@
 # == Example
 #	board = RubyKnight::Board.new
 #
-#	# disable timing output.  oops
-#	def time_it label
-#		yield
-#	end
-#
 #	puts board.to_s
 #	print "Enter move: "
 #	$stdin.each do |move|
