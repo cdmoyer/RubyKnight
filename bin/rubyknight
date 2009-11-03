@@ -47,6 +47,20 @@ def play b, eval
 	b.cnotation_move "#{RubyKnight::Board.position_to_coord move[0]}#{RubyKnight::Board.position_to_coord move[1]}"
 end
 
+def help
+	puts
+	puts "Enter a move such as e2e4, or a command."
+	puts "Commands are prefixed with !"
+	puts "  !quit - quit"
+	puts "  !undo - revert a move"
+	puts "  !load <file> - load game state from a file"
+	puts "  !dump <file> - dump game state to a file"
+	puts "  !play - tell the computer to start playing the current color"
+	puts "  !reset - start a new game"
+	puts
+end
+
+help 
 cplay = false
 b = RubyKnight::Board.new
 eval = RubyKnight::BoardEvaluator.new b
@@ -72,6 +86,8 @@ $stdin.each do |move|
 			when "reset" 
 				b = RubyKnight::Board.new
 				eval = RubyKnight::BoardEvaluator.new b
+			when "help" 
+				help
 		end
 		displayb b,eval
 	else
