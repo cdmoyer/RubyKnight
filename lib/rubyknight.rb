@@ -135,7 +135,7 @@ module RubyKnight
 			file = coord[0].getbyte(0)
 			rank = coord[1].getbyte(0)
 
-			pos = ((8 - (rank.to_i - zero)) * 8) +\
+			pos = ((8 - (rank - zero)) * 8) +\
 			      (file - a)
 
 		end
