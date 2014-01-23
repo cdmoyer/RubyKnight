@@ -132,8 +132,8 @@ module RubyKnight
 		def Board.coord_to_position coord
 			a, zero = 'a0'.unpack('cc')
 
-			file = coord[0]
-			rank = coord[1]
+			file = coord[0].getbyte(0)
+			rank = coord[1].getbyte(0)
 
 			pos = ((8 - (rank.to_i - zero)) * 8) +\
 			      (file - a)
