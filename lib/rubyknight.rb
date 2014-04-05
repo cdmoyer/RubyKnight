@@ -310,7 +310,7 @@ module RubyKnight
 
 		def mark_enpassant last_piece, last_orig, last_dest
 			if last_piece == WPAWN and last_orig > 47 and last_orig < 56 and
-				@bitboards[ENPASSANT] = ( 1 << last_orig+8)
+				@bitboards[ENPASSANT] = ( 1 << last_orig-8)
 			elsif last_piece == BPAWN and last_orig > 7 and last_orig < 16 and
 				@bitboards[ENPASSANT] = ( 1 << last_orig+8)
 			else
