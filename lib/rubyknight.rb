@@ -156,7 +156,7 @@ module RubyKnight
 		def cnotation_to_bits cnot
 			if cnot =~ /([a-h][1-8])([a-h][1-8])([qrbnkp]{0,1})/
 				unless $3 == "" 
-					promotion = if @to_play = WHITE then 0
+					promotion = if @to_play == WHITE then 0
 					            else 6 end
 					promotion += 
 						case $3
